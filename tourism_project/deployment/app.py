@@ -3,24 +3,31 @@ import streamlit as st
 import pandas as pd
 import joblib
 import os
-import joblib
 import traceback
 
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Updated to load preprocessor and model separately
+PREPROCESSOR_PATH = os.path.join(
+    CURRENT_DIR,
+    "preprocessor.pkl"
+)
 MODEL_PATH = os.path.join(
     CURRENT_DIR,
-    "best_model.pkl"
+    "best_model.pkl" # This is the classifier saved in train.py
 )
 
+preprocessor = None
+model = None
 
 try:
+    preprocessor = joblib.load(PREPROCESSOR_PATH)
     model = joblib.load(MODEL_PATH)
-    st.success("Model loaded successfully")
+    st.success("Preprocessor and Model loaded successfully")
 
 except Exception as e:
-    st.error(f"Error: {str(e)}")
+    st.error(f"Error loading preprocessor or model: {str(e)}")
     st.code(traceback.format_exc())
     st.stop()
 
@@ -54,21 +61,52 @@ duration = st.number_input(
     10
 )
 
+# Adding input fields for 'TypeofContact', 'Occupation', 'Gender', 'MaritalStatus', 'ProductPitched', 'Designation' for preprocessing
+type_of_contact = st.selectbox("Type of Contact", ['Company Invited', 'Self Inquiry'])
+occupation = st.selectbox("Occupation", ['Salaried', 'Small Business', 'Freelancer', 'Large Business', 'Unemployed'])
+gender = st.selectbox("Gender", ['Male', 'Female'])
+marital_status = st.selectbox("Marital Status", ['Married', 'Single', 'Divorced'])
+product_pitched = st.selectbox("Product Pitched", ['Basic', 'Deluxe', 'Standard', 'Super Deluxe', 'Executive', 'Luxury'])
+designation = st.selectbox("Designation", ['Manager', 'Executive', 'Senior Manager', 'AVP', 'VP', 'Director'])
+
+# Adding fields for NumberOfPersonVisiting, PreferredPropertyStar, NumberOfTrips, NumberOfChildrenVisiting
+number_of_person_visiting = st.number_input("Number of Persons Visiting", 1, 10, 1)
+preferred_property_star = st.selectbox("Preferred Property Star", [3, 4, 5])
+number_of_trips = st.number_input("Number of Trips Annually", 1, 100, 1)
+number_of_children_visiting = st.number_input("Number of Children Visiting", 0, 5, 0)
+pitch_satisfaction_score = st.number_input("Pitch Satisfaction Score", 1, 5, 3)
+
+
+
 if st.button("Predict"):
 
-    input_df = pd.DataFrame(
-        {
-            "Age":[age],
-            "CityTier":[city],
-            "MonthlyIncome":[income],
-            "Passport":[passport],
-            "OwnCar":[own_car],
-            "NumberOfFollowups":[followups],
-            "DurationOfPitch":[duration]
-        }
-    )
+    input_data_raw = {
+        "Age": age,
+        "TypeofContact": type_of_contact,
+        "CityTier": city,
+        "Occupation": occupation,
+        "Gender": gender,
+        "NumberOfPersonVisiting": number_of_person_visiting,
+        "PreferredPropertyStar": preferred_property_star,
+        "MaritalStatus": marital_status,
+        "NumberOfTrips": number_of_trips,
+        "Passport": passport,
+        "OwnCar": own_car,
+        "NumberOfChildrenVisiting": number_of_children_visiting,
+        "Designation": designation,
+        "MonthlyIncome": income,
+        "PitchSatisfactionScore": pitch_satisfaction_score,
+        "ProductPitched": product_pitched,
+        "NumberOfFollowups": followups,
+        "DurationOfPitch": duration
+    }
 
-    prediction = model.predict(input_df)[0]
+    input_df = pd.DataFrame([input_data_raw])
+
+    # Apply the preprocessor to the input data
+    processed_input = preprocessor.transform(input_df)
+
+    prediction = model.predict(processed_input)[0]
 
     if prediction == 1:
         st.success(
