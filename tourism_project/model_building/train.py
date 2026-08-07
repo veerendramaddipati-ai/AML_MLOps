@@ -118,7 +118,7 @@ with mlflow.start_run():
 
     joblib.dump(
     best_model.named_steps["model"],
-    "tourism_project/deployment/model.pkl"
+    "tourism_project/deployment/best_model.pkl"
     )
 
     # Corrected indentation for these lines
