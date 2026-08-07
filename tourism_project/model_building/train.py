@@ -111,18 +111,13 @@ with mlflow.start_run():
     mlflow.log_metric("f1_score",f1)
     mlflow.log_metric("roc_auc",roc_auc)
 
+    # Save the entire pipeline, not just the model and preprocessor separately
     joblib.dump(
-    best_model.named_steps["preprocessor"],
-    "tourism_project/deployment/preprocessor.pkl"
+        best_model,
+        "tourism_project/deployment/best_model.pkl"
     )
 
-    joblib.dump(
-    best_model.named_steps["model"],
-    "tourism_project/deployment/best_model.pkl"
-    )
-
-    # Corrected indentation for these lines
-    print("Model and preprocessor saved successfully")
+    print("Model saved successfully")
     print("Best Parameters")
     print(grid.best_params_)
 
