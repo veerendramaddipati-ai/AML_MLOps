@@ -7,6 +7,10 @@ DATA_PATH = "tourism_project/data/tourism.csv"
 
 df = pd.read_csv(DATA_PATH)
 
+# Drop 'Unnamed: 0' column if it exists (often created when saving/loading CSVs with default index)
+if 'Unnamed: 0' in df.columns:
+    df.drop(columns=['Unnamed: 0'], inplace=True)
+
 # Remove unnecessary identifier column
 df.drop(columns=["CustomerID"], inplace=True)
 
