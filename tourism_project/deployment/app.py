@@ -8,26 +8,22 @@ import traceback
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Updated to load preprocessor and model separately
-PREPROCESSOR_PATH = os.path.join(
-    CURRENT_DIR,
-    "preprocessor.pkl"
-)
+# Updated to load the entire pipeline
 MODEL_PATH = os.path.join(
     CURRENT_DIR,
-    "best_model.pkl" # This is the classifier saved in train.py
+    "best_model.pkl"
 )
 
-preprocessor = None
+# Initialize model to None
 model = None
 
 try:
-    preprocessor = joblib.load(PREPROCESSOR_PATH)
+    # Load the entire pipeline (preprocessor + model)
     model = joblib.load(MODEL_PATH)
-    st.success("Preprocessor and Model loaded successfully")
+    st.success("Model pipeline loaded successfully")
 
 except Exception as e:
-    st.error(f"Error loading preprocessor or model: {str(e)}")
+    st.error(f"Error loading model pipeline: {str(e)}")
     st.code(traceback.format_exc())
     st.stop()
 
@@ -103,10 +99,8 @@ if st.button("Predict"):
 
     input_df = pd.DataFrame([input_data_raw])
 
-    # Apply the preprocessor to the input data
-    processed_input = preprocessor.transform(input_df)
-
-    prediction = model.predict(processed_input)[0]
+    # The loaded model is now the full pipeline, which handles preprocessing internally
+    prediction = model.predict(input_df)[0]
 
     if prediction == 1:
         st.success(
